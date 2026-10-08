@@ -1,8 +1,40 @@
-.idea
-run
-# Ignore Gradle project-specific cache directory
-.gradle
+# Gradle & Build Artifacts
+.gradle/
+build/
+bin/
+out/
 
-# Ignore Gradle build output directory
-build
-bin
+# IDE & Editor Files
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.project
+.classpath
+
+# Local Workspace Metadata
+.agent/
+.agents/
+.gemini/
+
+# Compiled Binaries & Archives (keep gradle-wrapper)
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+*.class
+
+# Minecraft Server Test Runtime
+run/
+server/
+world*/
+logs/
+crash-reports/
+cache/
+server.properties
+server-icon.png
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+desktop.ini
