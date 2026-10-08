@@ -17,6 +17,7 @@ dependencies {
     compileOnly 'org.jetbrains:annotations:24.1.0'
     implementation "net.kyori:adventure-api:4.17.0"
     implementation "net.kyori:adventure-platform-bukkit:4.3.4"
+    implementation "org.bstats:bstats-bukkit:3.1.0"
 }
 
 processResources {
@@ -41,6 +42,7 @@ jar {
 shadowJar {
     archiveClassifier.set('')
     archiveFileName = "motd-enhanced-${project.version}.jar"
+    relocate 'org.bstats', 'dev.peyaj.motdenhanced.metrics'
 }
 
 tasks.assemble.dependsOn tasks.shadowJar

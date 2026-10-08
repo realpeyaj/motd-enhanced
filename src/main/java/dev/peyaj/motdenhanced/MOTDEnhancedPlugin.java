@@ -5,6 +5,8 @@ import dev.peyaj.motdenhanced.web.LocalWebServer;
 import dev.peyaj.motdenhanced.web.SessionManager;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
+import org.bstats.bukkit.Metrics;
+import org.bstats.charts.SimplePie;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.CachedServerIcon;
@@ -58,6 +60,17 @@ public class MOTDEnhancedPlugin extends JavaPlugin {
         this.motdText = getServer().getMotd();
 
         getServer().getPluginManager().registerEvents(new ServerListPingEventHandler(this), this);
+
+        int pluginId = 34571;
+        Metrics metrics = new Metrics(this, pluginId);
+        metrics.addCustomChart(new SimplePie("web_editor_enabled", () ->
+                getConfig().getBoolean("web.enabled", true) ? "Enabled" : "Disabled"));
+        metrics.addCustomChart(new SimplePie("rotation_enabled", () ->
+                getConfig().getBoolean("rotation.enabled", false) ? "Enabled" : "Disabled"));
+        metrics.addCustomChart(new SimplePie("maintenance_mode", () ->
+                getConfig().getBoolean("maintenance.enabled", false) ? "Enabled" : "Disabled"));
+        metrics.addCustomChart(new SimplePie("custom_version_string", () ->
+                getConfig().getBoolean("version-string.enabled", false) ? "Enabled" : "Disabled"));
     }
 
     @Override
