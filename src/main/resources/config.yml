@@ -1,0 +1,56 @@
+# MOTD Editor Configuration
+
+web:
+  # Whether the local web editor server is enabled
+  enabled: true
+
+  # Port to run the local web editor HTTP server on
+  # use a new unallocated port separate from your serve/game port
+  port: 25585
+
+  # Bind address (0.0.0.0 listens on all network interfaces)
+  bind-address: "0.0.0.0"
+
+  # Public host or domain name displayed in the editor link.
+  # Leave empty to automatically use the server IP or localhost.
+  public-host: ""
+
+  # Lifetime of generated editor session tokens in minutes
+  token-lifetime-minutes: 30
+
+# Multi-MOTD rotation:
+# When enabled, a random MOTD from this list will be chosen on each server list ping.
+rotation:
+  enabled: false
+  motds:
+    - "&aA Minecraft Server\n&7Second line of message"
+    - "&bWelcome to the Server!\n&eJoin now for adventures"
+
+# Custom player sample hover text (Paper only):
+# Displayed when mouse-hovering over the player count (e.g. 0/20) in the Minecraft server list.
+# Supports color codes and placeholders: %online%, %max%
+hover-text:
+  - "&6Welcome to &eMinecraft Server&6!"
+  - "&7Online: &a%online%&7/&c%max%"
+  - "&bEnjoy your stay!"
+
+# Maintenance Mode (Paper / Bukkit):
+# When enabled, overrides the MOTD with a maintenance message, shows custom version text, and marks ping protocol as maintenance.
+maintenance:
+  enabled: false
+  motd: "&c&lMAINTENANCE &8» &7Server is currently undergoing maintenance.\n&eFollow updates on our Discord: &b/discord"
+  version-string: "&cMaintenance"
+
+# Custom Server Version / Protocol Text (Paper only):
+# Changes the version text displayed when viewing or hovering over the server ping bars (e.g. "1.20 - 1.21.x").
+version-string:
+  enabled: false
+  text: "&b1.20 - 1.21.x"
+
+# Player Count & Slots Customization:
+# Modify visible max player slots or enable "+1" dynamic online count.
+player-count:
+  modify-max: false
+  max-players: 100
+  plus-one: false
+

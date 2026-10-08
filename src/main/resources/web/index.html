@@ -1,0 +1,2548 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>motd-enhanced editor</title>
+  <link rel="icon" type="image/svg+xml" href="/default-server-icon.svg">
+  <link rel="shortcut icon" href="/default-server-icon.svg">
+  <meta name="application-name" content="motd-enhanced editor">
+  <meta name="apple-mobile-web-app-title" content="motd-enhanced editor">
+  <meta name="theme-color" content="#121214">
+  <style>
+    @font-face {
+      font-family: "Minecraft";
+      src: url("minecraft.woff2") format("woff2"),
+           url("/minecraft.woff2") format("woff2"),
+           url("https://cdn.jsdelivr.net/npm/@south-paw/typeface-minecraft/files/minecraft.woff2") format("woff2");
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: "Minecraft";
+      src: url("minecraft-bold.woff2") format("woff2"),
+           url("/minecraft-bold.woff2") format("woff2"),
+           url("https://cdn.jsdelivr.net/npm/@south-paw/typeface-minecraft/files/minecraft-bold.woff2") format("woff2");
+      font-weight: bold;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: "minecraft";
+      src: url("minecraft.woff2") format("woff2"),
+           url("/minecraft.woff2") format("woff2"),
+           url("https://cdn.jsdelivr.net/npm/@south-paw/typeface-minecraft/files/minecraft.woff2") format("woff2");
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: "minecraft";
+      src: url("minecraft-bold.woff2") format("woff2"),
+           url("/minecraft-bold.woff2") format("woff2"),
+           url("https://cdn.jsdelivr.net/npm/@south-paw/typeface-minecraft/files/minecraft-bold.woff2") format("woff2");
+      font-weight: bold;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    :root {
+      --font-family-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --font-family-minecraft: "Minecraft", minecraft, "Courier New", monospace;
+      --bg-color: #121214;
+      --main-text-color: #ffffff;
+      --invert-text-color: var(--bg-color);
+      --color-primary: #00875f;
+      --color-primary-hover: #00a877;
+      --color-secondary: #333337;
+      --color-accent: #68686b;
+      --color-warning: #cf0a0a;
+      --left-bg-color: #202024;
+      --content-text-color: #a9a9b2;
+      --border-radius: 6px;
+      --border-radius-small: 4px;
+      --footer-text-color: #8c8c8d;
+    }
+
+    * {
+      padding: 0;
+      margin: 0;
+      box-sizing: border-box;
+    }
+
+    body,
+    input,
+    textarea,
+    select,
+    button {
+      font-family: var(--font-family-ui);
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--main-text-color);
+      width: 100%;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 16px;
+      overflow-x: hidden;
+    }
+
+    button,
+    .button {
+      background-color: var(--color-secondary);
+      color: var(--main-text-color);
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 1;
+      border-radius: 30px;
+      padding: 11px 24px;
+      border: none;
+      cursor: pointer;
+      outline: inherit;
+      transition: background-color .2s, color .2s;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      text-decoration: none;
+      user-select: none;
+      gap: 8px;
+      font-family: var(--font-family-ui);
+    }
+
+    button:not([disabled]):hover,
+    .button:not([disabled]):hover,
+    .active:is(button, .button) {
+      background-color: var(--main-text-color);
+      color: var(--invert-text-color);
+    }
+
+    .btn-main:is(button, .button) {
+      background-color: var(--color-primary);
+      color: #ffffff;
+    }
+
+    .btn-main:is(button, .button):not([disabled]):hover {
+      background-color: var(--color-primary-hover);
+      color: #ffffff;
+    }
+
+    .size-small:is(button, .button) {
+      padding: 6px 14px;
+      font-size: 12px;
+      border-radius: var(--border-radius-small);
+    }
+
+    .btn-grey:is(button, .button) {
+      background-color: var(--color-accent);
+      color: #ffffff;
+    }
+
+    .btn-grey.reset:is(button, .button):not([disabled]):hover {
+      background-color: var(--color-warning);
+      color: #ffffff;
+    }
+
+    .wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      width: 100%;
+      padding: 40px 20px 20px 20px;
+    }
+
+    .header-logo {
+      font-size: 2.8rem;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      margin-bottom: 25px;
+      text-align: center;
+    }
+
+    .header-logo span {
+      color: var(--color-primary);
+    }
+
+    .left {
+      background-color: var(--left-bg-color);
+      border-radius: var(--border-radius);
+      padding: 35px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      max-width: 680px;
+    }
+
+    .editor-container {
+      position: relative;
+      margin-bottom: 28px;
+      width: 100%;
+    }
+
+    .editor-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: var(--color-secondary);
+      padding: 8px 12px;
+      position: relative;
+    }
+
+    .editor-bar.top {
+      border-radius: var(--border-radius) var(--border-radius) 0 0;
+    }
+
+    .editor-bar.bottom {
+      border-radius: 0 0 var(--border-radius) var(--border-radius);
+      padding: 6px 10px;
+    }
+
+    .editor-bar.top .end {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .status {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--content-text-color);
+    }
+
+    .status .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: var(--color-primary);
+      display: inline-block;
+      transition: background-color 0.2s;
+    }
+
+    .status.pending .status-dot {
+      background-color: #f59e0b;
+    }
+
+    .status.error .status-dot {
+      background-color: var(--color-warning);
+    }
+
+    .status .tooltip-val {
+      font-size: 13px;
+      color: #ffffff;
+    }
+
+    .editor-inner {
+      padding: 12px 20px 12px 12px;
+      display: flex;
+      align-items: flex-start;
+      position: relative;
+      box-sizing: border-box;
+      width: 100%;
+      min-height: 92px;
+      background-color: #241c14;
+      background-image:
+        linear-gradient(rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0.72)),
+        url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAEQSURBVDhPbZKxCgJBDET3iwQRLGwEBS0EOzvhLESwsbe1sfaLT17gLcNpsWySTWYyybbHcTm+L5s6w3ZW9/2wGInrv87rHifG/bnt6m4EnqdVJWHzQDIxQIzr83bdzztBM1l0CvC1SUxQyYhjFwAB2zYRAJkB4C3fyS8JtmaiDNhKMmYHWdPQwyHRIhlgI5bzIU4+PiDVgSBTGRa4hdwWh5rmQDgO0inbCT62q9SuLajRJItkTu3Y5LlK/CZrTln9MilRKYL0jyQABQ7LwSrBASdQbSFZ/DS5PtmT9e8Q1c1DtjqVlb8QkgKwLZmUICug3BSm3J8hmuzHsQu3kJ3Ycf1Eh+WvA4y4q7SImPrt8gseSP7of3rNUAAAAABJRU5ErkJggg==");
+      background-size: auto, 64px 64px;
+      background-repeat: repeat;
+      image-rendering: pixelated;
+      border: none;
+    }
+
+    .server-icon {
+      position: relative;
+      cursor: pointer;
+      width: 64px;
+      height: 64px;
+      background-color: transparent;
+      border: 1px solid #333333;
+      flex-shrink: 0;
+      margin-right: 14px;
+      image-rendering: pixelated;
+    }
+
+    .server-icon img {
+      width: 64px;
+      height: 64px;
+      display: block;
+      image-rendering: pixelated;
+    }
+
+    .server-icon .hover-icon {
+      display: flex;
+      opacity: 0;
+      position: absolute;
+      top: 0;
+      left: 0;
+      justify-content: center;
+      align-items: center;
+      width: 64px;
+      height: 64px;
+      background: rgba(0, 135, 95, 0.75);
+      transition: opacity .2s ease-in-out;
+      color: #ffffff;
+    }
+
+    .server-icon:hover .hover-icon {
+      opacity: 1;
+    }
+
+    .editor-inner .text {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    .server-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      margin-bottom: 5px;
+    }
+
+    .mc-font,
+    .editor-inner,
+    .editor-inner *:not(i):not(svg):not(path),
+    .editor-inner .name,
+    textarea#motd-raw,
+    .editor-preview-render,
+    .editor-preview-render *,
+    .editor-preview-render div,
+    .editor-preview-render span,
+    #motd-preview,
+    #motd-preview *,
+    .minecraft-input,
+    .motd-area,
+    .motd-area *,
+    .mc-char-btn,
+    .style-tool-btn,
+    .align-tool-btn {
+      font-family: "Minecraft", minecraft, "Courier New", monospace !important;
+      font-size: 16px !important;
+      line-height: 18px !important;
+      -webkit-font-smoothing: none !important;
+      -moz-osx-font-smoothing: grayscale !important;
+      font-smooth: never !important;
+      text-rendering: optimizeSpeed !important;
+      letter-spacing: 0 !important;
+      font-feature-settings: normal !important;
+      font-variant: normal !important;
+    }
+
+    .mc-char-btn,
+    .style-tool-btn,
+    .align-tool-btn,
+    .editor-inner,
+    .editor-inner *,
+    .editor-inner .name,
+    textarea#motd-raw,
+    .editor-preview-render,
+    .editor-preview-render *,
+    .editor-preview-render div,
+    .editor-preview-render span,
+    #motd-preview,
+    #motd-preview * {
+      text-shadow: none !important;
+    }
+
+    .mc-char-btn,
+    .style-tool-btn,
+    .align-tool-btn {
+      font-size: 14px !important;
+      line-height: 1 !important;
+    }
+
+    .editor-inner .name {
+      color: #ffffff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      outline: none;
+    }
+
+    .server-ping-badge {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .server-ping-badge .player-count {
+      font-family: "Minecraft", minecraft, monospace !important;
+      font-size: 14px !important;
+      color: #aaaaaa;
+    }
+
+    .ping-bars {
+      display: inline-flex;
+      align-items: flex-end;
+      gap: 1.5px;
+      height: 12px;
+      width: 14px;
+    }
+
+    .ping-bars .bar {
+      width: 2px;
+      background-color: #00aa00;
+      border-radius: 0.5px;
+    }
+    .ping-bars .bar-1 { height: 3px; }
+    .ping-bars .bar-2 { height: 5px; }
+    .ping-bars .bar-3 { height: 7px; }
+    .ping-bars .bar-4 { height: 9px; }
+    .ping-bars .bar-5 { height: 12px; }
+
+    .editor-textarea-wrap {
+      width: 100%;
+      position: relative;
+    }
+
+    textarea#motd-raw {
+      width: 100%;
+      height: 40px;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #ffffff;
+      resize: none;
+      white-space: pre !important;
+      overflow: hidden;
+      font-family: "Minecraft", minecraft, monospace !important;
+      font-size: 16px !important;
+      line-height: 18px !important;
+      display: block;
+    }
+
+    .editor-preview-render {
+      color: #aaaaaa;
+      white-space: pre !important;
+      width: 100%;
+      min-height: 44px;
+      font-family: "Minecraft", minecraft, monospace !important;
+      font-size: 16px !important;
+      line-height: 18px !important;
+      display: none;
+      cursor: pointer;
+      user-select: text;
+    }
+
+    .editor-preview-render div {
+      height: 18px;
+      line-height: 18px;
+      white-space: pre !important;
+      overflow: hidden;
+      display: block;
+      width: 100%;
+      text-align: left;
+    }
+
+    .editor-preview-render span {
+      display: inline;
+      white-space: pre !important;
+      font-family: "Minecraft", minecraft, monospace !important;
+    }
+
+    .mc-obf {
+      display: inline-block;
+      font-family: "Minecraft", minecraft, monospace !important;
+    }
+
+    .toolbar-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .align-buttons {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .align-tool-btn {
+      width: 23px;
+      height: 23px;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      background: transparent !important;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      border-radius: 2px !important;
+      color: #aaaaaa;
+      transition: background-color 0.1s, color 0.1s;
+    }
+
+    .align-tool-btn:hover {
+      background-color: rgba(255, 255, 255, 0.15) !important;
+      color: #ffffff;
+    }
+
+    .align-tool-btn svg {
+      width: 14px;
+      height: 14px;
+      fill: currentColor;
+    }
+
+    .color-buttons {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      flex-wrap: wrap;
+    }
+
+    .mc-char-btn {
+      width: 23px;
+      height: 23px;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      padding: 0;
+      transition: background-color 0.1s;
+      border-radius: 2px;
+    }
+
+    .mc-char-btn:hover {
+      background-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .style-buttons {
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+
+    .style-tool-btn {
+      width: 23px;
+      height: 23px;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      background: transparent !important;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      border-radius: 2px !important;
+      transition: background-color 0.1s;
+    }
+
+    .style-tool-btn:hover {
+      background-color: rgba(255, 255, 255, 0.15) !important;
+    }
+
+    .hex-inline {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .hex-picker-dot {
+      width: 20px;
+      height: 20px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .tab-menu {
+      width: 100%;
+    }
+
+    .tab-controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .tabs {
+      background: var(--color-secondary);
+      border-radius: var(--border-radius);
+      min-width: 100%;
+      margin-top: 20px;
+    }
+
+    .tab {
+      padding: 18px;
+      display: none;
+      position: relative;
+    }
+
+    .tab.active {
+      display: block;
+    }
+
+    .tab .inner {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+    }
+
+    .motd-area {
+      border: 0 none;
+      background: var(--color-accent);
+      color: var(--main-text-color);
+      resize: none;
+      outline: none;
+      padding: 10px;
+      min-height: 70px;
+      border-radius: var(--border-radius-small);
+      margin-bottom: 12px;
+      font-family: var(--font-family-minecraft);
+      font-size: 13px;
+      width: 100%;
+      word-break: break-all;
+      white-space: pre-wrap;
+    }
+
+    .tab-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+
+    .escaped {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 32px;
+      height: 18px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--color-accent);
+      border-radius: 18px;
+      transition: .3s;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 12px;
+      width: 12px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      border-radius: 50%;
+      transition: .3s;
+    }
+
+    input:checked+.slider {
+      background-color: var(--color-primary);
+    }
+
+    input:checked+.slider:before {
+      transform: translateX(14px);
+    }
+
+    .minecraft-input {
+      background: #000000;
+      color: #ffffff;
+      border: 2px solid #ffffff;
+      padding: 10px 16px;
+      font-family: var(--font-family-minecraft);
+      text-align: center;
+      font-size: 14px;
+      width: 100%;
+      margin-bottom: 12px;
+    }
+
+    footer {
+      width: 100%;
+      padding: 22px 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 13px;
+      color: var(--footer-text-color);
+    }
+
+    .footer-content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .footer-divider {
+      color: rgba(255, 255, 255, 0.2);
+      font-size: 10px;
+    }
+
+    .footer-nav {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .footer-nav a {
+      color: var(--footer-text-color);
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+
+    .footer-nav a:hover {
+      color: #ffffff;
+      text-decoration: underline;
+    }
+
+    @media (max-width: 720px) {
+      .left {
+        padding: 20px;
+      }
+
+      .tab-controls {
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .tab-controls button {
+        width: 100%;
+      }
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(30px);
+      background-color: var(--left-bg-color);
+      color: #ffffff;
+      padding: 10px 22px;
+      border-radius: var(--border-radius);
+      border: 1px solid var(--color-secondary);
+      font-size: 14px;
+      z-index: 9999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    .char-count-badge {
+      font-size: 11px;
+      color: var(--content-text-color);
+      padding: 3px 8px;
+      border-radius: var(--border-radius-small);
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      user-select: none;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+
+    .char-count-badge.warn {
+      color: #f59e0b;
+      border-color: rgba(245, 158, 11, 0.3);
+    }
+
+    .char-count-badge.over {
+      color: var(--color-warning);
+      border-color: rgba(207, 10, 10, 0.3);
+    }
+
+    .server-icon.drag-active {
+      outline: 2px dashed var(--color-primary);
+      outline-offset: 2px;
+      background-color: rgba(0, 135, 95, 0.2);
+    }
+
+    /* Undo / Redo */
+    .grab-form {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    button:disabled,
+    .button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed !important;
+      pointer-events: none !important;
+    }
+
+    /* Gradient tool button */
+    .btn-gradient-trigger {
+      background: linear-gradient(135deg, #ff5555, #ffaa00, #55ff55, #55ffff, #ff55ff) !important;
+      color: #121214 !important;
+      font-weight: 700 !important;
+      font-size: 11px !important;
+      padding: 4px 10px !important;
+      border-radius: 4px !important;
+      border: none !important;
+      cursor: pointer !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 4px !important;
+      letter-spacing: 0.03em !important;
+      transition: filter 0.15s ease, transform 0.1s ease !important;
+      user-select: none !important;
+    }
+
+    .btn-gradient-trigger:hover {
+      filter: brightness(1.2) !important;
+      transform: scale(1.02) !important;
+      background: linear-gradient(135deg, #ff5555, #ffaa00, #55ff55, #55ffff, #ff55ff) !important;
+      color: #121214 !important;
+    }
+
+    /* Gradient Modal */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.72);
+      backdrop-filter: blur(4px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-card {
+      background: var(--left-bg-color);
+      border: 1px solid var(--color-secondary);
+      border-radius: var(--border-radius);
+      padding: 24px;
+      width: 90%;
+      max-width: 520px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 10px;
+    }
+
+    .modal-header h3 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    .modal-close-btn {
+      background: transparent;
+      border: none;
+      color: #aaaaaa;
+      font-size: 22px;
+      cursor: pointer;
+      padding: 0 4px;
+      line-height: 1;
+    }
+
+    .modal-close-btn:hover {
+      color: #ffffff;
+      background: transparent;
+    }
+
+    .gradient-input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .gradient-input-group label {
+      font-size: 12px;
+      color: var(--content-text-color);
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    .gradient-text-box {
+      width: 100%;
+      background: #141416;
+      border: 1px solid var(--color-secondary);
+      border-radius: var(--border-radius-small);
+      padding: 8px 12px;
+      color: #ffffff;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .gradient-text-box:focus {
+      border-color: var(--color-primary);
+    }
+
+    .gradient-colors-row {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .color-select-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #141416;
+      padding: 6px 10px;
+      border-radius: var(--border-radius-small);
+      border: 1px solid var(--color-secondary);
+      flex: 1;
+      min-width: 140px;
+    }
+
+    .color-select-item input[type="color"] {
+      width: 28px;
+      height: 28px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .color-select-item span {
+      font-size: 13px;
+      font-weight: 500;
+      color: #ffffff;
+    }
+
+    .gradient-presets {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .preset-pill {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: #18181b;
+      color: #cccccc;
+      cursor: pointer;
+      user-select: none;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .preset-pill:hover {
+      border-color: var(--color-primary);
+      color: #ffffff;
+    }
+
+    .gradient-options-row {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .gradient-option-check {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: #cccccc;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .gradient-preview-box {
+      background-color: #241c14;
+      background-image:
+        linear-gradient(rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0.72)),
+        url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAEQSURBVDhPbZKxCgJBDET3iwQRLGwEBS0EOzvhLESwsbe1sfaLT17gLcNpsWySTWYyybbHcTm+L5s6w3ZW9/2wGInrv87rHifG/bnt6m4EnqdVJWHzQDIxQIzr83bdzztBM1l0CvC1SUxQyYhjFwAB2zYRAJkB4C3fyS8JtmaiDNhKMmYHWdPQwyHRIhlgI5bzIU4+PiDVgSBTGRa4hdwWh5rmQDgO0inbCT62q9SuLajRJItkTu3Y5LlK/CZrTln9MilRKYL0jyQABQ7LwSrBASdQbSFZ/DS5PtmT9e8Q1c1DtjqVlb8QkgKwLZmUICug3BSm3J8hmuzHsQu3kJ3Ycf1Eh+WvA4y4q7SImPrt8gseSP7of3rNUAAAAABJRU5ErkJggg==");
+      background-size: auto, 64px 64px;
+      background-repeat: repeat;
+      image-rendering: pixelated;
+      padding: 12px;
+      border-radius: var(--border-radius-small);
+      font-family: "Minecraft", minecraft, monospace !important;
+      font-size: 16px !important;
+      line-height: 18px !important;
+      color: #ffffff;
+      min-height: 42px;
+      display: flex;
+      align-items: center;
+      overflow-x: auto;
+      white-space: pre !important;
+      text-shadow: none !important;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .config-badge {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: none;
+      letter-spacing: normal;
+    }
+
+    .maintenance-badge {
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .config-grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+      margin-bottom: 12px;
+    }
+
+    @media (max-width: 600px) {
+      .config-grid-2col {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .config-card-mini {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .config-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .switch-sm {
+      width: 32px !important;
+      height: 18px !important;
+    }
+
+    .switch-sm .slider:before {
+      height: 14px !important;
+      width: 14px !important;
+      left: 2px !important;
+      bottom: 2px !important;
+    }
+
+    .switch-sm input:checked + .slider:before {
+      transform: translateX(14px) !important;
+    }
+
+    /* Minecraft Tooltip */
+    .server-ping-badge {
+      position: relative;
+    }
+
+    .mc-tooltip-box {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      margin-top: 6px;
+      background: rgba(16, 0, 16, 0.95);
+      border: 2px solid #28007f;
+      border-radius: 2px;
+      padding: 6px 10px;
+      z-index: 9999;
+      pointer-events: none;
+      display: none;
+      flex-direction: column;
+      gap: 3px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7);
+      white-space: pre !important;
+    }
+
+    .mc-tooltip-box.visible {
+      display: flex;
+    }
+
+    .mc-tooltip-box div {
+      font-family: "Minecraft", minecraft, monospace !important;
+      font-size: 14px !important;
+      line-height: 16px !important;
+      color: #ffffff;
+      text-shadow: none !important;
+    }
+
+    /* Sub-sections in Server Info Tab */
+    .config-section-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #ffffff;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 14px;
+      margin-bottom: 6px;
+      align-self: flex-start;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .config-help {
+      font-size: 11px;
+      color: var(--content-text-color);
+      font-weight: normal;
+      text-transform: none;
+    }
+
+    .server-info-textarea {
+      width: 100%;
+      min-height: 70px;
+      background: #141416;
+      border: 1px solid var(--color-secondary);
+      border-radius: var(--border-radius-small);
+      padding: 8px 10px;
+      color: #ffffff;
+      font-family: var(--font-family-minecraft);
+      font-size: 13px;
+      line-height: 16px;
+      outline: none;
+      resize: vertical;
+      white-space: pre;
+      margin-bottom: 10px;
+    }
+
+    .server-info-textarea:focus {
+      border-color: var(--color-primary);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrapper">
+    <div class="header-logo">
+      motd<span>-enhanced</span>
+    </div>
+    <div class="left">
+      <div class="editor-container">
+        <div class="editor-bar top">
+          <div class="grab-form">
+            <button class="size-small btn-grey" id="btn-toggle-mode" onclick="toggleEditMode()" title="Toggle visual preview / code view">
+              Preview
+            </button>
+            <button class="size-small btn-grey" id="btn-undo" onclick="undo()" title="Undo (Ctrl+Z)" disabled>
+              &larr; Undo
+            </button>
+            <button class="size-small btn-grey" id="btn-redo" onclick="redo()" title="Redo (Ctrl+Y)" disabled>
+              Redo &rarr;
+            </button>
+          </div>
+          <div class="end">
+            <div class="char-count-badge" id="char-counter" title="Visible characters per line (excluding formatting codes)">L1: 0/45 | L2: 0/45</div>
+            <div class="status" id="save-status">
+              <span class="status-dot"></span>
+              <span class="tooltip-val" id="status-label">Saved</span>
+            </div>
+            <button class="size-small btn-grey reset" title="Reset to default MOTD" onclick="resetToDefault()">
+              Reset
+            </button>
+          </div>
+        </div>
+
+        <div class="editor-inner mcformat-background mcformat-motd">
+          <div class="server-icon js-server-icon" title="Upload custom server icon"
+            onclick="document.getElementById('icon-file-input').click()">
+            <img id="server-icon-img" width="64" height="64" title="motd-enhanced editor" src="/default-server-icon.svg"
+              alt="motd-enhanced editor" />
+            <div class="hover-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+            </div>
+          </div>
+          <div class="text">
+            <div class="server-header-row">
+              <div class="name js-name" id="server-name-label">Minecraft Server</div>
+              <div class="server-ping-badge" id="server-ping-badge" title="Hover for player sample"
+                onmouseenter="showServerHoverTooltip(event)" onmouseleave="hideServerHoverTooltip()">
+                <span class="player-count" id="server-players-badge">0/20</span>
+                <span class="ping-bars" title="Connection">
+                  <span class="bar bar-1"></span>
+                  <span class="bar bar-2"></span>
+                  <span class="bar bar-3"></span>
+                  <span class="bar bar-4"></span>
+                  <span class="bar bar-5"></span>
+                </span>
+                <div id="mc-hover-tooltip" class="mc-tooltip-box"></div>
+              </div>
+            </div>
+            <div class="editor-textarea-wrap">
+              <textarea id="motd-raw" spellcheck="false" placeholder="A Minecraft Server&#10;Second line of message"
+                oninput="onMotdInput()" onkeydown="onMotdKeyDown(event)"></textarea>
+              <div id="motd-preview" class="editor-preview-render" onclick="toggleEditMode()" title="Click to edit MOTD"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="editor-bar bottom">
+          <div class="toolbar-wrapper">
+            <div class="color-buttons">
+              <span class="mc-char-btn" style="color:#000000;" title="Black (&0)" onclick="insertCode('&0')">0</span>
+              <span class="mc-char-btn" style="color:#0000aa;" title="Dark Blue (&1)" onclick="insertCode('&1')">1</span>
+              <span class="mc-char-btn" style="color:#00aa00;" title="Dark Green (&2)" onclick="insertCode('&2')">2</span>
+              <span class="mc-char-btn" style="color:#00aaaa;" title="Dark Aqua (&3)" onclick="insertCode('&3')">3</span>
+              <span class="mc-char-btn" style="color:#aa0000;" title="Dark Red (&4)" onclick="insertCode('&4')">4</span>
+              <span class="mc-char-btn" style="color:#aa00aa;" title="Dark Purple (&5)" onclick="insertCode('&5')">5</span>
+              <span class="mc-char-btn" style="color:#ffaa00;" title="Gold (&6)" onclick="insertCode('&6')">6</span>
+              <span class="mc-char-btn" style="color:#aaaaaa;" title="Gray (&7)" onclick="insertCode('&7')">7</span>
+              <span class="mc-char-btn" style="color:#555555;" title="Dark Gray (&8)" onclick="insertCode('&8')">8</span>
+              <span class="mc-char-btn" style="color:#5555ff;" title="Blue (&9)" onclick="insertCode('&9')">9</span>
+              <span class="mc-char-btn" style="color:#55ff55;" title="Green (&a)" onclick="insertCode('&a')">a</span>
+              <span class="mc-char-btn" style="color:#55ffff;" title="Aqua (&b)" onclick="insertCode('&b')">b</span>
+              <span class="mc-char-btn" style="color:#ff5555;" title="Red (&c)" onclick="insertCode('&c')">c</span>
+              <span class="mc-char-btn" style="color:#ff55ff;" title="Light Purple (&d)" onclick="insertCode('&d')">d</span>
+              <span class="mc-char-btn" style="color:#ffff55;" title="Yellow (&e)" onclick="insertCode('&e')">e</span>
+              <span class="mc-char-btn" style="color:#ffffff;" title="White (&f)" onclick="insertCode('&f')">f</span>
+            </div>
+
+            <div class="style-buttons">
+              <button type="button" class="style-tool-btn" style="color:#ffffff;font-weight:bold;" title="Bold (&l)" onclick="insertCode('&l')">l</button>
+              <button type="button" class="style-tool-btn" style="color:#ffffff;text-decoration:line-through;" title="Strikethrough (&m)" onclick="insertCode('&m')">m</button>
+              <button type="button" class="style-tool-btn" style="color:#ffffff;text-decoration:underline;" title="Underline (&n)" onclick="insertCode('&n')">n</button>
+              <button type="button" class="style-tool-btn" style="color:#ffffff;font-style:italic;" title="Italic (&o)" onclick="insertCode('&o')">o</button>
+              <button type="button" class="style-tool-btn" style="color:#ffffff;" title="Obfuscated (&k)" onclick="insertCode('&k')">k</button>
+              <button type="button" class="style-tool-btn" style="color:#ffffff;" title="Reset (&r)" onclick="insertCode('&r')">r</button>
+            </div>
+
+            <div class="align-buttons">
+              <button type="button" class="align-tool-btn" title="Align Left" onclick="alignMotd('left')">
+                <svg viewBox="0 0 24 24"><path d="M3 4h18v2H3V4zm0 5h12v2H3V9zm0 5h18v2H3v-2zm0 5h12v2H3v-2z"/></svg>
+              </button>
+              <button type="button" class="align-tool-btn" title="Align Center" onclick="alignMotd('center')">
+                <svg viewBox="0 0 24 24"><path d="M3 4h18v2H3V4zm3 5h12v2H6V9zm-3 5h18v2H3v-2zm3 5h12v2H6v-2z"/></svg>
+              </button>
+              <button type="button" class="align-tool-btn" title="Align Right" onclick="alignMotd('right')">
+                <svg viewBox="0 0 24 24"><path d="M3 4h18v2H3V4zm6 5h12v2H9V9zm-6 5h18v2H3v-2zm6 5h12v2H9v-2z"/></svg>
+              </button>
+            </div>
+
+            <div class="hex-inline">
+              <input type="color" id="hex-picker" class="hex-picker-dot" value="#00a877" title="Custom Hex Color"
+                onchange="insertHex(this.value)">
+            </div>
+
+            <button type="button" class="btn-gradient-trigger" onclick="openGradientModal()" title="Two-Color Gradient Generator">
+              Gradient
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-menu">
+        <div class="tab-controls">
+          <button class="btn-main" id="btn-save-apply" onclick="saveToServer(true)">
+            Save & Apply
+          </button>
+          <button id="tab-btn-output" onclick="switchTab('output')">
+            Get your MOTD
+          </button>
+          <button id="tab-btn-fetch" onclick="switchTab('fetch')">
+            Get from server
+          </button>
+          <button id="tab-btn-preview" onclick="switchTab('preview')">
+            Server Info
+          </button>
+        </div>
+
+        <div class="tabs">
+          <div class="tab" id="tab-output">
+            <div class="inner">
+              <div class="motd-area" id="output-text"></div>
+              <div class="tab-bottom">
+                <button class="size-small btn-grey" onclick="copyOutputMotd()">
+                  Copy MOTD
+                </button>
+                <div class="escaped">
+                  <span>Escape</span>
+                  <label class="switch">
+                    <input type="checkbox" id="escape-toggle" onchange="updateOutputView()">
+                    <span class="slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tab" id="tab-fetch">
+            <div class="inner">
+              <input type="text" id="fetch-server-input" class="minecraft-input"
+                placeholder="Server IP or domain (e.g. mc.hypixel.net)" style="text-align: left; margin-bottom: 12px;"
+                onkeydown="if(event.key==='Enter') fetchFromServer()">
+              <div class="tab-bottom">
+                <span style="font-size:13px; color:var(--content-text-color);" id="fetch-status-display">Enter a server
+                  IP or domain to grab its MOTD & icon</span>
+                <button class="size-small btn-main" id="btn-fetch-action" onclick="fetchFromServer()">
+                  Get MOTD
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="tab" id="tab-preview">
+            <div class="inner">
+              <div class="minecraft-input" id="server-address-display">localhost</div>
+
+              <div class="config-section-title">
+                <span>Player Hover Tooltip (Paper)</span>
+                <span class="config-help">Shown on ping hover (&amp; codes + %online% / %max%)</span>
+              </div>
+              <textarea id="hover-text-input" class="server-info-textarea" spellcheck="false"
+                placeholder="&amp;6Welcome to &amp;eMinecraft Server&amp;6!&#10;&amp;7Online: &amp;a%online%&amp;7/&amp;c%max%&#10;&amp;bEnjoy your stay!"
+                oninput="onHoverTextInput()"></textarea>
+
+              <div class="config-section-title">
+                <span>Multi-MOTD Rotation on Ping</span>
+                <label class="switch" title="Toggle Multi-MOTD Rotation">
+                  <input type="checkbox" id="rotation-toggle" onchange="onRotationToggle()">
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <textarea id="rotation-motds-input" class="server-info-textarea" spellcheck="false"
+                placeholder="Separate each MOTD with '---' on a new line&#10;&amp;aLine 1&#10;&amp;7Line 2&#10;---&#10;&amp;bAnother MOTD Line 1&#10;&amp;eAnother Line 2"
+                oninput="onRotationInput()"></textarea>
+
+              <div class="config-section-title">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="color:#ef4444; font-weight:700;">Maintenance Mode</span>
+                  <span class="config-badge maintenance-badge">Paper &amp; Bukkit</span>
+                </div>
+                <label class="switch" title="Toggle Maintenance Mode">
+                  <input type="checkbox" id="maintenance-toggle" onchange="onMaintenanceToggle()">
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <textarea id="maintenance-motd-input" class="server-info-textarea" spellcheck="false"
+                style="min-height:50px; margin-bottom:8px;"
+                placeholder="&amp;c&amp;lMAINTENANCE &amp;8» &amp;7Server is currently undergoing maintenance.&#10;&amp;eFollow updates on our Discord: &amp;b/discord"
+                oninput="onMaintenanceMotdInput()"></textarea>
+              <div style="display:flex; gap:10px; align-items:center; margin-bottom:14px;">
+                <span style="font-size:12px; color:#aaa; white-space:nowrap;">Ping Version Text:</span>
+                <input type="text" id="maintenance-version-input" class="minecraft-input"
+                  style="text-align:left; font-size:12px; height:30px; padding:4px 8px; margin-bottom:0;"
+                  value="&amp;cMaintenance" oninput="onMaintenanceVersionInput()">
+              </div>
+
+              <div class="config-section-title">
+                <span>Custom Version &amp; Player Slots</span>
+                <span class="config-help">Paper Server Ping</span>
+              </div>
+              <div class="config-grid-2col">
+                <div class="config-card-mini">
+                  <div class="config-card-header">
+                    <span style="font-size:12px; font-weight:600; color:#fff;">Custom Version String</span>
+                    <label class="switch switch-sm" title="Toggle Custom Version String">
+                      <input type="checkbox" id="version-string-toggle" onchange="onVersionStringToggle()">
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                  <input type="text" id="version-string-input" class="minecraft-input"
+                    style="text-align:left; font-size:12px; height:30px; padding:4px 8px; margin-bottom:0;"
+                    value="&amp;b1.20 - 1.21.x" oninput="onVersionStringInput()" placeholder="&amp;b1.20 - 1.21.x">
+                </div>
+
+                <div class="config-card-mini">
+                  <div class="config-card-header">
+                    <span style="font-size:12px; font-weight:600; color:#fff;">Override Max Slots</span>
+                    <label class="switch switch-sm" title="Toggle Override Max Players">
+                      <input type="checkbox" id="modify-max-toggle" onchange="onModifyMaxToggle()">
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                  <div style="display:flex; gap:8px; align-items:center;">
+                    <input type="number" id="custom-max-players-input" class="minecraft-input"
+                      style="text-align:left; font-size:12px; height:30px; padding:4px 8px; margin-bottom:0; width:70px;"
+                      value="100" min="0" max="999999" oninput="onCustomMaxPlayersInput()">
+                    <label style="font-size:11px; color:#aaa; display:flex; align-items:center; gap:4px; cursor:pointer;">
+                      <input type="checkbox" id="plus-one-toggle" onchange="onPlusOneToggle()"> +1 Online
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="tab-bottom">
+                <div style="display:flex; gap:8px;">
+                  <button class="size-small btn-grey" onclick="addCurrentMotdToRotation()" title="Add current editor MOTD to rotation pool">
+                    + Add Current MOTD
+                  </button>
+                  <button class="size-small btn-grey" onclick="clearServerIcon()">
+                    Remove Icon
+                  </button>
+                </div>
+                <span style="font-size:13px; color:var(--content-text-color);" id="player-count-display">Max Players: 20</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-content">
+      <span class="copyright">&copy; 2026 peyaj</span>
+      <span class="footer-divider">&bull;</span>
+      <nav class="footer-nav">
+        <a target="_blank" title="Server plugin" href="https://github.com/realpeyaj/motd-enhanced">Server Plugin</a>
+        <a target="_blank" title="GitHub" href="https://github.com/realpeyaj">Author</a>
+        <a target="_blank" title="Issues" href="https://github.com/realpeyaj/motd-enhanced/issues">Issues</a>
+      </nav>
+    </div>
+  </footer>
+
+  <input type="file" id="icon-file-input" accept="image/png,image/jpeg,image/webp" style="display:none;"
+    onchange="handleIconUpload(event)">
+  <canvas id="crop-canvas" width="64" height="64" style="display:none;"></canvas>
+
+  <div id="gradient-modal" class="modal-backdrop" onclick="if(event.target===this) closeGradientModal()">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Gradient Generator</h3>
+        <button type="button" class="modal-close-btn" onclick="closeGradientModal()">&times;</button>
+      </div>
+
+      <div class="gradient-input-group">
+        <label>Text to Apply Gradient</label>
+        <input type="text" id="gradient-text-input" class="gradient-text-box" placeholder="Enter text..." oninput="updateGradientPreview()">
+      </div>
+
+      <div class="gradient-colors-row">
+        <div class="color-select-item">
+          <input type="color" id="gradient-c1" value="#ff5555" oninput="updateGradientPreview()">
+          <span>Start Color</span>
+        </div>
+        <div class="color-select-item">
+          <input type="color" id="gradient-c2" value="#55ffff" oninput="updateGradientPreview()">
+          <span>End Color</span>
+        </div>
+      </div>
+
+      <div class="gradient-presets">
+        <span class="preset-pill" onclick="setGradientPreset('#ff5555', '#ffff55')">Sunset</span>
+        <span class="preset-pill" onclick="setGradientPreset('#55ffff', '#5555ff')">Ocean</span>
+        <span class="preset-pill" onclick="setGradientPreset('#ff55ff', '#55ffff')">Cyberpunk</span>
+        <span class="preset-pill" onclick="setGradientPreset('#55ff55', '#00aaaa')">Mint</span>
+        <span class="preset-pill" onclick="setGradientPreset('#ffaa00', '#ff5555')">Flame</span>
+        <span class="preset-pill" onclick="setGradientPreset('#aa00aa', '#ff55ff')">Amethyst</span>
+      </div>
+
+      <div class="gradient-options-row">
+        <label class="gradient-option-check">
+          <input type="checkbox" id="grad-bold" onchange="updateGradientPreview()"> Bold (&amp;l)
+        </label>
+        <label class="gradient-option-check">
+          <input type="checkbox" id="grad-italic" onchange="updateGradientPreview()"> Italic (&amp;o)
+        </label>
+        <label class="gradient-option-check">
+          <input type="checkbox" id="grad-underline" onchange="updateGradientPreview()"> Underline (&amp;n)
+        </label>
+      </div>
+
+      <div class="gradient-input-group">
+        <label>Live Preview</label>
+        <div id="gradient-preview-box" class="gradient-preview-box"></div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="size-small btn-grey" onclick="closeGradientModal()">Cancel</button>
+        <button type="button" class="size-small btn-main" onclick="applyGradient()">Insert Gradient</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const DEFAULT_SERVER_ICON = '/default-server-icon.svg';
+    let currentFavicon = null;
+
+    function updateFavicon(iconUrl) {
+      currentFavicon = iconUrl || null;
+      const img = document.getElementById('server-icon-img');
+      if (img) img.src = currentFavicon || DEFAULT_SERVER_ICON;
+      let link = document.querySelector("link[rel~='icon']");
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.head.appendChild(link);
+      }
+      link.href = currentFavicon || DEFAULT_SERVER_ICON;
+    }
+    let activeTab = null;
+    let visualMode = false;
+    let saveTimeout = null;
+
+    let currentHoverText = [];
+    let currentRotationEnabled = false;
+    let currentRotationMotds = [];
+
+    // History buffer for Undo / Redo
+    const undoStack = [];
+    const redoStack = [];
+    const MAX_HISTORY = 40;
+    let isPerformingUndoRedo = false;
+
+    function saveHistoryState() {
+      if (isPerformingUndoRedo) return;
+      const textarea = document.getElementById('motd-raw');
+      if (!textarea) return;
+      const state = {
+        text: textarea.value,
+        start: textarea.selectionStart,
+        end: textarea.selectionEnd
+      };
+      if (undoStack.length > 0 && undoStack[undoStack.length - 1].text === state.text) {
+        return;
+      }
+      undoStack.push(state);
+      if (undoStack.length > MAX_HISTORY) undoStack.shift();
+      redoStack.length = 0;
+      updateUndoRedoButtons();
+    }
+
+    function updateUndoRedoButtons() {
+      const btnUndo = document.getElementById('btn-undo');
+      const btnRedo = document.getElementById('btn-redo');
+      if (btnUndo) btnUndo.disabled = undoStack.length <= 1;
+      if (btnRedo) btnRedo.disabled = redoStack.length === 0;
+    }
+
+    function undo() {
+      if (undoStack.length <= 1) return;
+      const textarea = document.getElementById('motd-raw');
+      isPerformingUndoRedo = true;
+      const current = undoStack.pop();
+      redoStack.push(current);
+      const prev = undoStack[undoStack.length - 1];
+      textarea.value = prev.text;
+      textarea.selectionStart = prev.start;
+      textarea.selectionEnd = prev.end;
+      onMotdInput(false);
+      isPerformingUndoRedo = false;
+      updateUndoRedoButtons();
+    }
+
+    function redo() {
+      if (redoStack.length === 0) return;
+      const textarea = document.getElementById('motd-raw');
+      isPerformingUndoRedo = true;
+      const next = redoStack.pop();
+      undoStack.push(next);
+      textarea.value = next.text;
+      textarea.selectionStart = next.start;
+      textarea.selectionEnd = next.end;
+      onMotdInput(false);
+      isPerformingUndoRedo = false;
+      updateUndoRedoButtons();
+    }
+
+    // Gradient Generator Logic
+    function openGradientModal() {
+      const textarea = document.getElementById('motd-raw');
+      let text = '';
+      if (textarea && textarea.selectionStart !== textarea.selectionEnd) {
+        text = textarea.value.substring(textarea.selectionStart, textarea.selectionEnd);
+        text = text.replace(/&[0-9a-fk-orA-FK-OR]/g, '').replace(/&#[0-9a-fA-F]{6}/g, '').replace(/§./g, '');
+      }
+      if (!text) {
+        text = 'Minecraft Server';
+      }
+      const inp = document.getElementById('gradient-text-input');
+      if (inp) inp.value = text;
+      updateGradientPreview();
+      const modal = document.getElementById('gradient-modal');
+      if (modal) modal.classList.add('open');
+    }
+
+    function closeGradientModal() {
+      const modal = document.getElementById('gradient-modal');
+      if (modal) modal.classList.remove('open');
+    }
+
+    function setGradientPreset(c1, c2) {
+      document.getElementById('gradient-c1').value = c1;
+      document.getElementById('gradient-c2').value = c2;
+      updateGradientPreview();
+    }
+
+    function hexToRgb(hex) {
+      hex = hex.replace('#', '');
+      if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+      const n = parseInt(hex, 16) || 0;
+      return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+    }
+
+    function rgbToHex(r, g, b) {
+      return '#' + [r, g, b].map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('');
+    }
+
+    function interpolateColor(c1, c2, factor) {
+      const [r1, g1, b1] = hexToRgb(c1);
+      const [r2, g2, b2] = hexToRgb(c2);
+      return rgbToHex(r1 + factor * (r2 - r1), g1 + factor * (g2 - g1), b1 + factor * (b2 - b1));
+    }
+
+    function buildGradientString(text, c1, c2, bold, italic, underline) {
+      if (!text) return '';
+      const len = text.length;
+      let res = '';
+      for (let i = 0; i < len; i++) {
+        const ch = text[i];
+        if (ch === ' ') {
+          res += ' ';
+          continue;
+        }
+        const factor = len > 1 ? i / (len - 1) : 0;
+        const hex = interpolateColor(c1, c2, factor);
+        let tags = '&' + hex;
+        if (bold) tags += '&l';
+        if (italic) tags += '&o';
+        if (underline) tags += '&n';
+        res += tags + ch;
+      }
+      return res;
+    }
+
+    function updateGradientPreview() {
+      const text = document.getElementById('gradient-text-input').value;
+      const c1 = document.getElementById('gradient-c1').value;
+      const c2 = document.getElementById('gradient-c2').value;
+      const bold = document.getElementById('grad-bold').checked;
+      const italic = document.getElementById('grad-italic').checked;
+      const underline = document.getElementById('grad-underline').checked;
+      const preview = document.getElementById('gradient-preview-box');
+      if (!preview) return;
+      const gradStr = buildGradientString(text, c1, c2, bold, italic, underline);
+      preview.innerHTML = renderFormattedMinecraft(gradStr || 'Enter text...');
+    }
+
+    function applyGradient() {
+      const text = document.getElementById('gradient-text-input').value;
+      if (!text) return;
+      const c1 = document.getElementById('gradient-c1').value;
+      const c2 = document.getElementById('gradient-c2').value;
+      const bold = document.getElementById('grad-bold').checked;
+      const italic = document.getElementById('grad-italic').checked;
+      const underline = document.getElementById('grad-underline').checked;
+
+      saveHistoryState();
+      const gradStr = buildGradientString(text, c1, c2, bold, italic, underline);
+      const textarea = document.getElementById('motd-raw');
+      if (visualMode) setVisualMode(false);
+
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const val = textarea.value;
+      textarea.value = val.substring(0, start) + gradStr + val.substring(end);
+      textarea.focus();
+      textarea.selectionStart = textarea.selectionEnd = start + gradStr.length;
+
+      onMotdInput();
+      closeGradientModal();
+      showToast('Gradient applied');
+    }
+
+    // Hover Tooltip logic
+    function showServerHoverTooltip(e) {
+      const tooltip = document.getElementById('mc-hover-tooltip');
+      if (!tooltip) return;
+      const badge = document.getElementById('server-players-badge');
+      let online = '0';
+      let max = '20';
+      if (badge && badge.textContent.includes('/')) {
+        const parts = badge.textContent.split('/');
+        online = parts[0] || '0';
+        max = parts[1] || '20';
+      }
+
+      const lines = (currentHoverText && currentHoverText.length > 0)
+        ? currentHoverText
+        : ["&6Welcome to &eMinecraft Server&6!", "&7Online: &a%online%&7/&c%max%", "&bEnjoy your stay!"];
+
+      const resolved = lines.map(l => l.replace(/%online%/g, online).replace(/%max%/g, max)).join('\n');
+      tooltip.innerHTML = renderFormattedMinecraft(resolved);
+      tooltip.classList.add('visible');
+    }
+
+    function hideServerHoverTooltip() {
+      const tooltip = document.getElementById('mc-hover-tooltip');
+      if (tooltip) tooltip.classList.remove('visible');
+    }
+
+    function onHoverTextInput() {
+      const val = document.getElementById('hover-text-input').value;
+      currentHoverText = val.split(/\r?\n/).filter(l => l.trim().length > 0);
+      setStatus('Pending...', 'pending');
+      clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(() => {
+        saveToServer();
+      }, 1500);
+    }
+
+    // Rotation logic
+    function onRotationToggle() {
+      currentRotationEnabled = document.getElementById('rotation-toggle').checked;
+      setStatus('Pending...', 'pending');
+      clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(() => {
+        saveToServer();
+      }, 1500);
+    }
+
+    function onRotationInput() {
+      currentRotationMotds = parseRotationMotdsFromInput();
+      setStatus('Pending...', 'pending');
+      clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(() => {
+        saveToServer();
+      }, 1500);
+    }
+
+    function parseRotationMotdsFromInput() {
+      const raw = document.getElementById('rotation-motds-input').value;
+      return raw.split(/\n---\n|\r\n---\r\n/)
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
+    }
+
+    function addCurrentMotdToRotation() {
+      const textarea = document.getElementById('motd-raw');
+      const text = textarea.value.trim();
+      if (!text) {
+        showToast('MOTD is empty');
+        return;
+      }
+      const rotBox = document.getElementById('rotation-motds-input');
+      const current = rotBox.value.trim();
+      rotBox.value = current ? current + '\n---\n' + text : text;
+      document.getElementById('rotation-toggle').checked = true;
+      currentRotationEnabled = true;
+      currentRotationMotds = parseRotationMotdsFromInput();
+      saveToServer(true);
+      showToast('Added MOTD to rotation pool');
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionToken = urlParams.get('token') || '';
+
+    const mcColors = {
+      '0': { color: '#000000', shadow: '#000000' },
+      '1': { color: '#0000aa', shadow: '#00002a' },
+      '2': { color: '#00aa00', shadow: '#002a00' },
+      '3': { color: '#00aaaa', shadow: '#002a2a' },
+      '4': { color: '#aa0000', shadow: '#2a0000' },
+      '5': { color: '#aa00aa', shadow: '#2a002a' },
+      '6': { color: '#ffaa00', shadow: '#3f2a00' },
+      '7': { color: '#aaaaaa', shadow: '#2a2a2a' },
+      '8': { color: '#555555', shadow: '#151515' },
+      '9': { color: '#5555ff', shadow: '#15153f' },
+      'a': { color: '#55ff55', shadow: '#153f15' },
+      'b': { color: '#55ffff', shadow: '#153f3f' },
+      'c': { color: '#ff5555', shadow: '#3f1515' },
+      'd': { color: '#ff55ff', shadow: '#3f153f' },
+      'e': { color: '#ffff55', shadow: '#3f3f15' },
+      'f': { color: '#ffffff', shadow: '#3f3f3f' }
+    };
+
+    function getHexShadow(hex) {
+      if (!hex || hex.length < 7) return '#1a1a1a';
+      const r = parseInt(hex.substring(1, 3), 16) || 0;
+      const g = parseInt(hex.substring(3, 5), 16) || 0;
+      const b = parseInt(hex.substring(5, 7), 16) || 0;
+      const sr = Math.floor(r / 4).toString(16).padStart(2, '0');
+      const sg = Math.floor(g / 4).toString(16).padStart(2, '0');
+      const sb = Math.floor(b / 4).toString(16).padStart(2, '0');
+      return '#' + sr + sg + sb;
+    }
+
+    function setStatus(text, state) {
+      const el = document.getElementById('save-status');
+      const label = document.getElementById('status-label');
+      el.className = 'status ' + state;
+      label.textContent = text;
+    }
+
+    function setVisualMode(enabled) {
+      visualMode = enabled;
+      const textarea = document.getElementById('motd-raw');
+      const preview = document.getElementById('motd-preview');
+      const btn = document.getElementById('btn-toggle-mode');
+      if (visualMode) {
+        preview.innerHTML = renderFormattedMinecraft(textarea.value);
+        textarea.style.display = 'none';
+        preview.style.display = 'block';
+        if (btn) btn.textContent = 'Edit Code';
+      } else {
+        textarea.style.display = 'block';
+        preview.style.display = 'none';
+        if (btn) btn.textContent = 'Preview';
+        textarea.focus();
+      }
+    }
+
+    function toggleEditMode() {
+      setVisualMode(!visualMode);
+    }
+
+    function insertCode(code) {
+      if (visualMode) {
+        setVisualMode(false);
+      }
+      saveHistoryState();
+      const textarea = document.getElementById('motd-raw');
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const val = textarea.value;
+      textarea.value = val.substring(0, start) + code + val.substring(end);
+      textarea.focus();
+      textarea.selectionStart = textarea.selectionEnd = start + code.length;
+      onMotdInput();
+    }
+
+    function insertHex(hex) {
+      insertCode('&' + hex);
+    }
+
+    function onMotdKeyDown(e) {
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === 'z' || e.key === 'Z') {
+          e.preventDefault();
+          if (e.shiftKey) redo(); else undo();
+          return;
+        }
+        if (e.key === 'y' || e.key === 'Y') {
+          e.preventDefault();
+          redo();
+          return;
+        }
+      }
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        insertCode('    ');
+        return;
+      }
+      if (e.key === 'Enter') {
+        const textarea = e.target;
+        const lines = textarea.value.split('\n');
+        if (lines.length >= 2 && textarea.selectionStart === textarea.selectionEnd) {
+          e.preventDefault();
+          showToast('Maximum 2 lines allowed in Minecraft MOTD');
+        }
+      }
+    }
+
+    function getCleanLength(str) {
+      if (!str) return 0;
+      return str.replace(/&[0-9a-fk-orA-FK-OR]/g, '')
+                .replace(/&#[0-9a-fA-F]{6}/g, '')
+                .replace(/§[0-9a-fk-orA-FK-OR]/g, '')
+                .length;
+    }
+
+    function updateCharCounter() {
+      const counter = document.getElementById('char-counter');
+      if (!counter) return;
+      const raw = document.getElementById('motd-raw').value;
+      const lines = raw.split(/\r?\n/);
+      const l1 = getCleanLength(lines[0] || '');
+      const l2 = getCleanLength(lines[1] || '');
+
+      counter.textContent = `L1: ${l1}/45 | L2: ${l2}/45`;
+      if (l1 > 45 || l2 > 45) {
+        counter.className = 'char-count-badge over';
+        counter.title = 'Warning: line exceeds 45 visible characters and may wrap or truncate on some screen resolutions';
+      } else if (l1 > 40 || l2 > 40) {
+        counter.className = 'char-count-badge warn';
+        counter.title = 'Approaching optimal line width';
+      } else {
+        counter.className = 'char-count-badge';
+        counter.title = 'Visible characters per line (excluding formatting codes)';
+      }
+    }
+
+    let historyDebounceTimeout;
+    function onMotdInput(recordHistory = true) {
+      const textarea = document.getElementById('motd-raw');
+      if (textarea.value.includes('§')) {
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        textarea.value = textarea.value.replace(/§/g, '&');
+        textarea.setSelectionRange(start, end);
+      }
+      const lines = textarea.value.split(/\r?\n/);
+      if (lines.length > 2) {
+        textarea.value = lines.slice(0, 2).join('\n');
+        showToast('Clamped to 2 lines (Minecraft limit)');
+      }
+
+      if (recordHistory) {
+        clearTimeout(historyDebounceTimeout);
+        historyDebounceTimeout = setTimeout(() => {
+          saveHistoryState();
+        }, 350);
+      }
+
+      updateCharCounter();
+      setStatus('Pending...', 'pending');
+      updateOutputView();
+      document.getElementById('motd-preview').innerHTML = renderFormattedMinecraft(textarea.value);
+      clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(() => {
+        saveToServer();
+      }, 1500);
+    }
+
+    const tabNames = ['output', 'fetch', 'preview'];
+
+    function switchTab(tabId) {
+      if (activeTab === tabId) {
+        tabNames.forEach(t => {
+          const el = document.getElementById('tab-' + t);
+          const btn = document.getElementById('tab-btn-' + t);
+          if (el) el.className = 'tab';
+          if (btn) btn.className = '';
+        });
+        activeTab = null;
+        return;
+      }
+
+      activeTab = tabId;
+      tabNames.forEach(t => {
+        const el = document.getElementById('tab-' + t);
+        const btn = document.getElementById('tab-btn-' + t);
+        if (el) el.className = 'tab' + (t === tabId ? ' active' : '');
+        if (btn) btn.className = (t === tabId ? 'active' : '');
+      });
+      if (tabId === 'output') updateOutputView();
+      if (tabId === 'fetch') {
+        setTimeout(() => {
+          const inp = document.getElementById('fetch-server-input');
+          if (inp) inp.focus();
+        }, 50);
+      }
+    }
+
+    async function fetchFromServer() {
+      const input = document.getElementById('fetch-server-input');
+      const server = input.value.trim();
+      const statusEl = document.getElementById('fetch-status-display');
+      const btn = document.getElementById('btn-fetch-action');
+
+      if (!server) {
+        statusEl.textContent = 'Please enter a server IP or domain';
+        return;
+      }
+
+      if (!sessionToken) {
+        statusEl.textContent = 'Session token missing';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Fetching...';
+      statusEl.textContent = 'Connecting to ' + server + '...';
+
+      try {
+        const res = await fetch('/api/query?token=' + encodeURIComponent(sessionToken) + '&server=' + encodeURIComponent(server));
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          if (data.motd !== undefined) {
+            document.getElementById('motd-raw').value = data.motd;
+          }
+          if (data.favicon) {
+            updateFavicon(data.favicon);
+          } else {
+            updateFavicon(null);
+          }
+          onMotdInput();
+          setVisualMode(true);
+          statusEl.textContent = 'Loaded MOTD and icon from ' + server;
+        } else {
+          statusEl.textContent = data.message || 'Failed to ping server';
+        }
+      } catch (e) {
+        statusEl.textContent = 'Network error fetching server status';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Get MOTD';
+      }
+    }
+
+    function updateOutputView() {
+      const raw = document.getElementById('motd-raw').value;
+      const escape = document.getElementById('escape-toggle').checked;
+      const out = document.getElementById('output-text');
+      if (escape) {
+        out.textContent = raw.replace(/[§&]([0-9a-fk-orA-FK-OR])/g, '\u00A7$1')
+          .replace(/[§&]#([0-9a-fA-F]{6})/g, '\u00A7#$1');
+      } else {
+        out.textContent = raw.replace(/&([0-9a-fk-orA-FK-OR])/g, '§$1');
+      }
+    }
+
+    function copyOutputMotd() {
+      const text = document.getElementById('output-text').textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('MOTD copied to clipboard');
+      }).catch(() => {
+        showToast('Copied MOTD');
+      });
+    }
+
+    function processIconFile(file) {
+      if (!file || !file.type.startsWith('image/')) {
+        showToast('Please select or drop a valid image file');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function (evt) {
+        const img = new Image();
+        img.onload = function () {
+          const canvas = document.getElementById('crop-canvas');
+          const ctx = canvas.getContext('2d');
+          ctx.clearRect(0, 0, 64, 64);
+          ctx.imageSmoothingEnabled = false;
+          ctx.drawImage(img, 0, 0, 64, 64);
+          updateFavicon(canvas.toDataURL('image/png'));
+          saveToServer(true);
+          showToast('Server icon updated & saved');
+        };
+        img.src = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function handleIconUpload(e) {
+      const file = e.target.files[0];
+      if (file) processIconFile(file);
+      e.target.value = '';
+    }
+
+    const iconDropZone = document.querySelector('.js-server-icon');
+    if (iconDropZone) {
+      iconDropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        iconDropZone.classList.add('drag-active');
+      });
+      iconDropZone.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        iconDropZone.classList.remove('drag-active');
+      });
+      iconDropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        iconDropZone.classList.remove('drag-active');
+        if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+          processIconFile(e.dataTransfer.files[0]);
+        }
+      });
+    }
+
+    function clearServerIcon() {
+      updateFavicon(null);
+      saveToServer(true);
+      showToast('Removed server icon');
+    }
+
+    function resetToDefault() {
+      saveHistoryState();
+      document.getElementById('motd-raw').value = 'A Minecraft Server';
+      onMotdInput();
+      setVisualMode(false);
+      saveToServer(true);
+      showToast('Reset MOTD to default');
+    }
+
+    function getMinecraftCharWidth(ch, isBold) {
+      if (ch === ' ' || ch === '\xA0') return 4;
+      const narrow = '!i|,.:;\'`';
+      if (narrow.indexOf(ch) !== -1) return 2 + (isBold ? 1 : 0);
+      if (ch === 'l') return 3 + (isBold ? 1 : 0);
+      const midNarrow = 'tI[](){}';
+      if (midNarrow.indexOf(ch) !== -1) return 4 + (isBold ? 1 : 0);
+      const mid = 'kf*<">';
+      if (mid.indexOf(ch) !== -1) return 5 + (isBold ? 1 : 0);
+      const wide = '@~';
+      if (wide.indexOf(ch) !== -1) return 7 + (isBold ? 1 : 0);
+      return 6 + (isBold ? 1 : 0);
+    }
+
+    function getMinecraftLineWidth(line) {
+      let bold = false;
+      let width = 0;
+      let i = 0;
+      while (i < line.length) {
+        if ((line[i] === '§' || line[i] === '&') && i + 1 < line.length) {
+          if (line[i + 1] === '#' && i + 7 < line.length && /^[0-9A-Fa-f]{6}$/.test(line.substring(i + 2, i + 8))) {
+            i += 8;
+            continue;
+          }
+          const c = line[i + 1].toLowerCase();
+          if (c === 'l') {
+            bold = true;
+          } else if (c === 'r' || (mcColors[c] !== undefined)) {
+            bold = false;
+          }
+          i += 2;
+          continue;
+        }
+        width += getMinecraftCharWidth(line[i], bold);
+        i++;
+      }
+      return width;
+    }
+
+    function stripLineAlignment(line) {
+      let s = line;
+      while (s.length > 0) {
+        if (s.startsWith(' ')) {
+          s = s.substring(1);
+        } else if ((s.startsWith('&') || s.startsWith('§')) && s.length >= 2) {
+          const rest = s.substring(2);
+          if (rest.startsWith(' ')) {
+            s = rest.trimStart();
+          } else {
+            break;
+          }
+        } else {
+          break;
+        }
+      }
+      return s;
+    }
+
+    function alignMotd(mode) {
+      if (visualMode) {
+        setVisualMode(false);
+      }
+      const textarea = document.getElementById('motd-raw');
+      const text = textarea.value;
+      const lines = text.split(/\r?\n/);
+
+      const selStart = textarea.selectionStart;
+      let lineIdx = -1;
+      if (typeof selStart === 'number') {
+        let charCount = 0;
+        for (let idx = 0; idx < lines.length; idx++) {
+          charCount += lines[idx].length + 1;
+          if (selStart <= charCount) {
+            lineIdx = idx;
+            break;
+          }
+        }
+      }
+
+      const targetIndices = (lineIdx >= 0 && lineIdx < lines.length) ? [lineIdx] : lines.map((_, i) => i);
+      const TOTAL_MC_WIDTH = 260;
+      const SPACE_WIDTH = 4;
+
+      for (const idx of targetIndices) {
+        const rawLine = lines[idx];
+        const stripped = stripLineAlignment(rawLine);
+        if (!stripped) {
+          lines[idx] = '';
+          continue;
+        }
+
+        if (mode === 'left') {
+          lines[idx] = stripped;
+        } else if (mode === 'center') {
+          const lineWidth = getMinecraftLineWidth(stripped);
+          const remaining = Math.max(0, TOTAL_MC_WIDTH - lineWidth);
+          const spaceCount = Math.floor(remaining / (2 * SPACE_WIDTH));
+          lines[idx] = ' '.repeat(spaceCount) + stripped;
+        } else if (mode === 'right') {
+          const lineWidth = getMinecraftLineWidth(stripped);
+          const remaining = Math.max(0, TOTAL_MC_WIDTH - lineWidth);
+          const spaceCount = Math.floor(remaining / SPACE_WIDTH);
+          lines[idx] = ' '.repeat(spaceCount) + stripped;
+        }
+      }
+
+      saveHistoryState();
+      textarea.value = lines.join('\n');
+      onMotdInput();
+      showToast('Aligned ' + mode);
+    }
+
+    function renderFormattedMinecraft(raw) {
+      if (!raw) return '<div>&nbsp;</div><div>&nbsp;</div>';
+      const lines = raw.split(/\r?\n/);
+      return lines.map(line => {
+        let color = '#aaaaaa';
+        let shadow = '#2a2a2a';
+        let bold = false;
+        let italic = false;
+        let underline = false;
+        let strikethrough = false;
+        let obfuscated = false;
+        let out = '';
+        let currentRun = '';
+        let currentStyle = '';
+        let currentObf = false;
+
+        function flushRun() {
+          if (!currentRun) return;
+          if (currentObf) {
+            out += `<span class="mc-obf" data-len="${currentRun.length}" style="${currentStyle}">${currentRun}</span>`;
+          } else {
+            out += `<span style="${currentStyle}">${currentRun}</span>`;
+          }
+          currentRun = '';
+        }
+
+        let i = 0;
+        while (i < line.length) {
+          if ((line[i] === '§' || line[i] === '&') && i + 1 < line.length) {
+            if (line[i + 1] === '#' && i + 7 < line.length && /^[0-9A-Fa-f]{6}$/.test(line.substring(i + 2, i + 8))) {
+              flushRun();
+              color = '#' + line.substring(i + 2, i + 8);
+              shadow = getHexShadow(color);
+              i += 8;
+              continue;
+            }
+            const c = line[i + 1].toLowerCase();
+            if (mcColors[c] !== undefined) {
+              flushRun();
+              color = mcColors[c].color;
+              shadow = mcColors[c].shadow;
+              bold = italic = underline = strikethrough = obfuscated = false;
+              i += 2;
+              continue;
+            } else if (c === 'l') { flushRun(); bold = true; i += 2; continue; }
+            else if (c === 'o') { flushRun(); italic = true; i += 2; continue; }
+            else if (c === 'n') { flushRun(); underline = true; i += 2; continue; }
+            else if (c === 'm') { flushRun(); strikethrough = true; i += 2; continue; }
+            else if (c === 'k') { flushRun(); obfuscated = true; i += 2; continue; }
+            else if (c === 'r') {
+              flushRun();
+              color = '#aaaaaa';
+              shadow = '#2a2a2a';
+              bold = italic = underline = strikethrough = obfuscated = false;
+              i += 2;
+              continue;
+            }
+          }
+
+          let style = `color:${color};`;
+          if (bold) style += 'font-weight:bold;';
+          if (italic) style += 'font-style:italic;';
+          const decs = [];
+          if (underline) decs.push('underline');
+          if (strikethrough) decs.push('line-through');
+          if (decs.length > 0) style += `text-decoration:${decs.join(' ')};`;
+
+          if (style !== currentStyle || obfuscated !== currentObf) {
+            flushRun();
+            currentStyle = style;
+            currentObf = obfuscated;
+          }
+
+          const ch = line[i] === '<' ? '&lt;' : line[i] === '>' ? '&gt;' : line[i] === '&' ? '&amp;' : line[i];
+          currentRun += ch;
+          i++;
+        }
+        flushRun();
+        return '<div>' + (out || '&nbsp;') + '</div>';
+      }).join('');
+    }
+
+    setInterval(() => {
+      const obfs = document.querySelectorAll('.mc-obf');
+      if (obfs.length === 0) return;
+      const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()';
+      obfs.forEach(el => {
+        let t = '';
+        const len = parseInt(el.getAttribute('data-len')) || 1;
+        for (let j = 0; j < len; j++) {
+          t += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        el.textContent = t;
+      });
+    }, 60);
+
+    function onMaintenanceToggle() {
+      triggerDebouncedSave();
+      const enabled = document.getElementById('maintenance-toggle')?.checked;
+      showToast('Maintenance mode ' + (enabled ? 'enabled' : 'disabled'));
+    }
+
+    function onMaintenanceMotdInput() {
+      triggerDebouncedSave();
+    }
+
+    function onMaintenanceVersionInput() {
+      triggerDebouncedSave();
+    }
+
+    function onVersionStringToggle() {
+      triggerDebouncedSave();
+    }
+
+    function onVersionStringInput() {
+      triggerDebouncedSave();
+    }
+
+    function onModifyMaxToggle() {
+      triggerDebouncedSave();
+    }
+
+    function onCustomMaxPlayersInput() {
+      triggerDebouncedSave();
+    }
+
+    function onPlusOneToggle() {
+      triggerDebouncedSave();
+    }
+
+    async function loadServerData() {
+      if (!sessionToken) {
+        setStatus('No Session Token', 'error');
+        return;
+      }
+      try {
+        const res = await fetch('/api/data?token=' + encodeURIComponent(sessionToken));
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        if (data.text !== undefined) {
+          document.getElementById('motd-raw').value = data.text;
+        }
+        if (data.favicon) {
+          updateFavicon(data.favicon);
+        } else {
+          updateFavicon(null);
+        }
+        if (data.serverName) {
+          document.getElementById('server-address-display').textContent = data.serverName;
+        }
+        if (data.maxPlayers) {
+          document.getElementById('player-count-display').textContent = 'Max Players: ' + data.maxPlayers;
+          const badge = document.getElementById('server-players-badge');
+          if (badge) badge.textContent = '0/' + data.maxPlayers;
+        }
+
+        if (data.rotationEnabled !== undefined) {
+          currentRotationEnabled = data.rotationEnabled;
+          const rotToggle = document.getElementById('rotation-toggle');
+          if (rotToggle) rotToggle.checked = currentRotationEnabled;
+        }
+        if (data.rotationMotds && Array.isArray(data.rotationMotds)) {
+          currentRotationMotds = data.rotationMotds;
+          const rotBox = document.getElementById('rotation-motds-input');
+          if (rotBox) rotBox.value = currentRotationMotds.join('\n---\n');
+        }
+        if (data.hoverText && Array.isArray(data.hoverText)) {
+          currentHoverText = data.hoverText;
+          const hoverBox = document.getElementById('hover-text-input');
+          if (hoverBox) hoverBox.value = currentHoverText.join('\n');
+        }
+
+        if (data.maintenanceEnabled !== undefined) {
+          const mToggle = document.getElementById('maintenance-toggle');
+          if (mToggle) mToggle.checked = data.maintenanceEnabled;
+        }
+        if (data.maintenanceMotd) {
+          const mMotd = document.getElementById('maintenance-motd-input');
+          if (mMotd) mMotd.value = data.maintenanceMotd;
+        }
+        if (data.maintenanceVersion) {
+          const mVer = document.getElementById('maintenance-version-input');
+          if (mVer) mVer.value = data.maintenanceVersion;
+        }
+
+        if (data.versionStringEnabled !== undefined) {
+          const vToggle = document.getElementById('version-string-toggle');
+          if (vToggle) vToggle.checked = data.versionStringEnabled;
+        }
+        if (data.versionString) {
+          const vInput = document.getElementById('version-string-input');
+          if (vInput) vInput.value = data.versionString;
+        }
+
+        if (data.modifyMaxPlayers !== undefined) {
+          const mmToggle = document.getElementById('modify-max-toggle');
+          if (mmToggle) mmToggle.checked = data.modifyMaxPlayers;
+        }
+        if (data.customMaxPlayers !== undefined) {
+          const cmInput = document.getElementById('custom-max-players-input');
+          if (cmInput) cmInput.value = data.customMaxPlayers;
+        }
+        if (data.plusOnePlayer !== undefined) {
+          const poToggle = document.getElementById('plus-one-toggle');
+          if (poToggle) poToggle.checked = data.plusOnePlayer;
+        }
+
+        saveHistoryState();
+        setStatus('Saved', 'success');
+        updateCharCounter();
+        updateOutputView();
+        document.getElementById('motd-preview').innerHTML = renderFormattedMinecraft(document.getElementById('motd-raw').value);
+      } catch (err) {
+        setStatus('Load Error', 'error');
+      }
+    }
+
+    let toastTimeout;
+    function showToast(msg) {
+      const el = document.getElementById('toast');
+      if (!el) return;
+      el.textContent = msg;
+      el.className = 'toast show';
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        el.className = 'toast';
+      }, 2200);
+    }
+
+    window.alert = function (msg) { showToast(msg); };
+    window.confirm = function () { return true; };
+
+    window.addEventListener('keydown', (e) => {
+      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+      const modifier = isMac ? e.metaKey : e.ctrlKey;
+      if (!modifier) return;
+
+      const key = e.key.toLowerCase();
+      if (key === 's') {
+        e.preventDefault();
+        saveToServer(true);
+      } else if (key === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) redo(); else undo();
+      } else if (key === 'y') {
+        e.preventDefault();
+        redo();
+      } else if (key === 'b') {
+        e.preventDefault();
+        insertCode('&l');
+      } else if (key === 'i') {
+        e.preventDefault();
+        insertCode('&o');
+      } else if (key === 'u') {
+        e.preventDefault();
+        insertCode('&n');
+      }
+    });
+
+    async function saveToServer(isManual = false) {
+      if (!sessionToken) {
+        setStatus('Token Missing', 'error');
+        if (isManual) showToast('Session token missing');
+        return;
+      }
+      setStatus('Saving...', 'pending');
+      try {
+        const res = await fetch('/api/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            token: sessionToken,
+            text: document.getElementById('motd-raw').value,
+            favicon: currentFavicon,
+            rotationEnabled: currentRotationEnabled,
+            rotationMotds: parseRotationMotdsFromInput(),
+            hoverText: currentHoverText,
+            maintenanceEnabled: document.getElementById('maintenance-toggle')?.checked || false,
+            maintenanceMotd: document.getElementById('maintenance-motd-input')?.value || '',
+            maintenanceVersion: document.getElementById('maintenance-version-input')?.value || '&cMaintenance',
+            versionStringEnabled: document.getElementById('version-string-toggle')?.checked || false,
+            versionString: document.getElementById('version-string-input')?.value || '&b1.20 - 1.21.x',
+            modifyMaxPlayers: document.getElementById('modify-max-toggle')?.checked || false,
+            customMaxPlayers: parseInt(document.getElementById('custom-max-players-input')?.value) || 20,
+            plusOnePlayer: document.getElementById('plus-one-toggle')?.checked || false
+          })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          setStatus('Saved', 'success');
+          if (isManual) showToast('MOTD and settings saved & applied');
+        } else {
+          setStatus('Save Failed', 'error');
+          if (isManual) showToast(data.message || 'Save failed');
+        }
+      } catch (e) {
+        setStatus('Network Error', 'error');
+        if (isManual) showToast('Network error saving to server');
+      }
+    }
+
+    loadServerData();
+  </script>
+  <div id="toast" class="toast"></div>
+</body>
+
+</html>

@@ -1,21 +1,33 @@
-name: motdgg
+name: motd-enhanced
 version: $version
-description: Easily edit your MOTD and apply changes without restarting your server
-author: Aternos GmbH
-website: https://motd.gg
+description: Edit your MOTD and server icon with a local web editor without restarting your server
+author: peyaj
+website: https://github.com/realpeyaj/motd-enhanced
 
-main: gg.motd.bukkit.MOTDGGPlugin
-api-version: 1.13
+main: dev.peyaj.motdenhanced.MOTDEnhancedPlugin
+api-version: '26.1'
 folia-supported: true
 
 commands:
-  motdgg:
-    description: Save your current MOTD to motd.gg or apply changes without restarting the sever.
-    usage: "/motdgg editor|apply [<id|url>]"
-    aliases: motd
-    permission: motdgg
+  motd-enhanced:
+    description: Open the web editor, apply the MOTD, copy one from another server, reload, or toggle maintenance.
+    usage: "/motd <editor|apply|reload|get|maintenance>"
+    aliases: [motd]
+    permission: motdenhanced
 
 permissions:
-  motdgg:
-    description: Save your current MOTD to motd.gg or apply changes without restarting the sever.
+  motdenhanced:
+    description: Full access to the MOTD editor and commands.
+    default: op
+  motdenhanced.editor:
+    description: Permission to open and edit the MOTD via the local web editor.
+    default: op
+  motdenhanced.apply:
+    description: Permission to apply MOTD changes.
+    default: op
+  motdenhanced.reload:
+    description: Permission to reload the plugin configuration.
+    default: op
+  motdenhanced.maintenance:
+    description: Permission to toggle server maintenance mode.
     default: op

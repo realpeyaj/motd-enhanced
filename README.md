@@ -1,41 +1,22 @@
-<br />
-<div align="center">
-  <a href="https://motd.gg" target="_blank">
-    <img src="img/logo.svg" alt="Logo" width="260">
-  </a>
+# motd-enhanced
 
-  <h3 align="center">Server plugin</h3>
+[![Version](https://img.shields.io/badge/version-1.0-blue.svg)](https://github.com/realpeyaj/motd-enhanced/releases)
+[![Java](https://img.shields.io/badge/java-25-orange.svg)](https://openjdk.org)
+[![Platform](https://img.shields.io/badge/platform-Paper%20%7C%20Folia%20%7C%20Spigot-green.svg)](https://papermc.io)
+[![License](https://img.shields.io/badge/license-MIT-lightgrey.svg)](LICENSE)
 
-  <p align="center">
-    Quickly upload your current MOTD and server icon to <a href="https://motd.gg" target="_blank">motd.gg</a> to edit or share them.
-    <br />
-    <a href="https://modrinth.com/plugin/motdgg" target="_blank"><strong>Download on modrinth »</strong></a>
-    <br />
-    <br />
-    <a href="https://www.spigotmc.org/resources/motd-gg.106501" target="_blank">SpigotMC</a>
-    ·
-    <a href="https://www.curseforge.com/minecraft/bukkit-plugins/motd-gg" target="_blank">CurseForge</a>
-    ·
-    <a href="https://hangar.papermc.io/Aternos/motdgg" target="_blank">Hangar</a>
-  </p>
-</div>
+Real-time Minecraft server MOTD and icon editor powered by an embedded local web interface. Standalone fork of [motdgg-bukkit](https://github.com/aternosorg/motdgg-bukkit).
 
+## Commands
 
-## About motd.gg
+| Command | Description | Permission |
+| --- | --- | --- |
+| `/motd editor` | Open local web editor session | `motdenhanced.editor` |
+| `/motd apply` | Reload MOTD and icon from disk | `motdenhanced.apply` |
+| `/motd get <host>` | Copy MOTD and icon from another server | `motdenhanced.apply` |
+| `/motd maintenance <on\|off>` | Toggle maintenance mode | `motdenhanced.maintenance` |
+| `/motd reload` | Reload configuration | `motdenhanced.reload` |
 
-<a href="https://motd.gg" target="_blank">motd.gg</a> allows you to quickly and intuitively create a MOTD for your Minecraft Java server. Features like our in-game preview allow you to see your newly created MOTD directly in your Minecraft server list, so you can always create the best MOTD for you and your players.
+## License
 
-## Plugin features
-
-**Edit your current MOTD via motd.gg**
-
-<img src="img/open-editor.gif" alt="Logo" width="500">
-
-**Apply your new MOTD and server icon**
-
-<img src="img/apply-changes.gif" alt="Logo" width="500">
-
-
-**The MOTD changes instantly without a server restart**
-
-<img src="img/apply-instant.gif" alt="Logo" width="500">
+MIT

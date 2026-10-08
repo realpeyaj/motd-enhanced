@@ -1,4 +1,4 @@
-package gg.motd.bukkit;
+package dev.peyaj.motdenhanced;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -16,11 +16,10 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public class MOTDCommand implements CommandExecutor, TabExecutor {
-    protected final MOTDGGPlugin plugin;
-
+    protected final MOTDEnhancedPlugin plugin;
     public final HashMap<String, CommandExecutor> subCommands = new HashMap<>();
 
-    public MOTDCommand(MOTDGGPlugin plugin) {
+    public MOTDCommand(MOTDEnhancedPlugin plugin) {
         this.plugin = plugin;
         this.registerSubCommands();
     }
@@ -28,37 +27,46 @@ public class MOTDCommand implements CommandExecutor, TabExecutor {
     private void registerSubCommands() {
         this.subCommands.put("editor", new MOTDEditorCommand(this));
         this.subCommands.put("apply", new MOTDApplyCommand(this));
+        this.subCommands.put("reload", new MOTDReloadCommand(this));
+        this.subCommands.put("get", new MOTDGetCommand(this));
+        this.subCommands.put("maintenance", new MOTDMaintenanceCommand(this));
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
-        if (!sender.hasPermission("motdgg")) {
-            plugin.adventure().sender(sender).sendMessage(Component
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
+        if (!sender.hasPermission("motdenhanced")) {
+            plugin.sendMessage(sender, Component
                     .text("You don't have the permissions required to execute this command.")
                     .color(NamedTextColor.RED)
             );
             return true;
         }
 
-        CommandExecutor subCommand = args.length == 0 ? null : subCommands.get(args[0]);
+        if (args.length == 0) {
+            plugin.sendMessage(sender, Component
+                    .text("Usage: /" + alias + " <editor|apply|reload|get|maintenance>")
+                    .color(NamedTextColor.YELLOW)
+            );
+            return true;
+        }
+
+        CommandExecutor subCommand = subCommands.get(args[0].toLowerCase());
         if (subCommand == null) {
-            return false;
+            plugin.sendMessage(sender, Component
+                    .text("Unknown subcommand. Usage: /" + alias + " <editor|apply|reload|get|maintenance>")
+                    .color(NamedTextColor.RED)
+            );
+            return true;
         }
 
         return subCommand.onCommand(sender, command, alias, Arrays.copyOfRange(args, 1, args.length));
     }
 
-    /**
-     * log a message
-     *
-     * @param level   log level
-     * @param message log message
-     */
     public void log(Level level, String message) {
         plugin.getLogger().log(level, message);
     }
 
-    public MOTDGGPlugin getPlugin() {
+    public MOTDEnhancedPlugin getPlugin() {
         return plugin;
     }
 
@@ -67,7 +75,14 @@ public class MOTDCommand implements CommandExecutor, TabExecutor {
         if (args.length == 1) {
             return subCommands.keySet()
                     .stream()
-                    .filter(arg -> arg.contains(args[0]))
+                    .filter(arg -> arg.toLowerCase().startsWith(args[0].toLowerCase()))
+                    .collect(Collectors.toList());
+        }
+
+        if (args.length == 2 && args[0].equalsIgnoreCase("maintenance")) {
+            return Arrays.asList("on", "off", "toggle", "status")
+                    .stream()
+                    .filter(arg -> arg.toLowerCase().startsWith(args[1].toLowerCase()))
                     .collect(Collectors.toList());
         }
 
